@@ -1,0 +1,33 @@
+-- 指定数据库
+use dbname;
+
+-- 修改数据
+delimiter //
+create procedure add_ordinay_priv() 
+BEGIN  
+
+
+    -- 插入数据
+IF NOT EXISTS (select 1 from CM_ROLE_PRIV_MAP where ROLE_ID = 2 and PRIV_ID=15)
+THEN
+    insert into CM_ROLE_PRIV_MAP(ROLE_ID,PRIV_ID) values(2,15)
+END IF; 
+
+
+    -- 增加列
+  IF NOT EXISTS (SELECT * FROM information_schema.columns WHERE table_schema=CurrentDatabase AND table_name = 'merchant_info' AND column_name = 'merchant_type') THEN  
+      ALTER TABLE merchant_info add column merchant_type int(11) comment '描述信息';
+  END IF;
+  
+   
+  
+END//
+delimiter ;
+call add_ordinay_priv();
+drop procedure if exists add_ordinay_priv; 
+
+
+	UPDATE table_a a
+	INNER JOIN  table_b  b ON a.id  = b.aid 
+    SET a.column = value
+    WHERE condition

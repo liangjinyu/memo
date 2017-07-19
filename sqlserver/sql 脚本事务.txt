@@ -1,0 +1,78 @@
+  
+  BEGIN TRAN 
+  DECLARE @errorsum INT
+  SET @errorsum = 0
+  
+  INSERT    INTO [MERCHANTAUDIT].[mas].[allies_merchant_mapping_t]
+  VALUES    ( 'a', NULL );
+  
+  SET @errorsum += @@ERROR
+  PRINT @errorsum
+        
+  UPDATE    [MERCHANTAUDIT].[mas].[allies_merchant_mapping_t]
+  SET       merchant_id = 990116
+  WHERE     allies_code = 'a'
+  
+  SET @errorsum += @@ERROR
+   
+  IF @errorsum <> 0
+    ROLLBACK TRAN
+  ELSE
+    COMMIT TRAN
+	
+	
+	------------------
+	
+	USE [MERCHANTAUDIT]
+GO
+
+/****** Object:  Table [dbo].[aa]    Script Date: 10/28/2016 17:57:32 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [dbo].[aa](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[name] [varchar](64) NULL
+) ON [PRIMARY]
+
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+
+
+
+
+
+
+
+
+	BEGIN TRAN
+DECLARE @maxid INT ,
+    @rowCount INT
+SET @maxid = ( SELECT   MAX(id) + 1
+               FROM     dbo.aa
+               WHERE    name = 1
+             );
+
+WAITFOR DELAY '00:00:05'
+UPDATE  dbo.aa
+SET     name = 1
+WHERE   id = @maxid
+        AND name = 0;
+SET @rowCount = @@rowcount
+PRINT @rowCount 
+IF @rowCount = 1
+    COMMIT TRAN
+ELSE
+    ROLLBACK TRAN
+IF @rowCount = 0
+    PRINT 'roll back'
+  
