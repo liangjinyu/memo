@@ -1,10 +1,15 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
-import requests,json
+import requests,json,logging
 
 #from urllib.request import urlopen
 
-
+logger = logging.getLogger("loggingmodule.NomalLogger")  
+handler = logging.FileHandler("/Users/jinyuliang/repo/memo/python/py.log")  
+formatter = logging.Formatter("[%(levelname)s][%(funcName)s][%(asctime)s]%(message)s")  
+handler.setFormatter(formatter)  
+logger.addHandler(handler)  
+logger.setLevel(logging.DEBUG)
 
 
 #curl -H "Content-Type: application/json" -X POST  --data '{"pageNo":2}' https://aliuat.memedai.cn/merchandise-center-web/merchandise/getMerchandise
@@ -21,6 +26,8 @@ print(response['code'])
 print(response['content']['merchandises'][0]['merchandiseName'])
 
 print(type(response['content']['merchandises'][0]))
+
+logger.info(response)
 
 
 

@@ -1,0 +1,27 @@
+solr 查询：
+1 修改字段类型：如果创建doc完成后修改字段，需要删除创建才能查询到
+2 多字段排序：inventory desc,price asc
+3 count：queryResonse.getResults().getNumFound()
+4 分组查询:facet
+5 多条件带修改字段类型：范围：name:口红 AND inventory:[50 TO 100]
+6 更新doc:可以按照条件查询出doc，更新内容后（id不变）add即可更新
+7 关键字去匹配：增加双引号
+8 solrDoc javabean转换：
+
+
+                DocumentObjectBinder binder = new DocumentObjectBinder();
+                binder.getBean(bean.class, doc);
+                binder.toSolrInputDocument(bean)
+
+9 copyField： 如果搜索关键词位aaa，两个字段name和 description ，只有有一个包含aaa就好返回doc，那么查询的时候就是name:aaa OR description:aaa,
+如果更多字段需要查询，这样的写法不方便，这时可以使用copyField.
+
+保持的doc可以增加一个字段keywords，只索引，不保存，查询的时候只要使用keywords:aaa，就可查询copyField中soure包含aaa的doc。
+
+    <field name="keywords"  type="text_mmseg4j_complex"    indexed="true"  stored="false" multiValued="true"/>
+    <copyField source="name" dest="keywords"/>
+    <copyField source="description" dest="keywords"/>
+
+10 中文分词 全词匹配：注意，必须使用英文双引号才不会分词
+
+

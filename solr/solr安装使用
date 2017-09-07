@@ -1,0 +1,92 @@
+1 下载solr tar报，解压。
+2 在server/solr下新建core:userinfo,conf配置可以从example拷贝,core.properties内容是一行：name=userinfo.
+3 下载中文分词组件mmseg4j-solr-2.4.0.jar,mmseg4j-core-1.10.0.jar到server/solr-webapp/web-inf/lib.
+4 配置server/solr/userinfo/conf/managed-schema,增加分词类型配置 text_mmseg4j_complex等类型，其中的dicPath需要配置，不需要自定义时建一个空目录即可。
+
+	
+-----------------------------------------
+solr命令：		
+启动：solr.cmd start  bin/solr start
+停止：solr.cmd stop -all    bin/solr stop
+cloud启动：solr.cmd start -c -z 99.48.58.77:2181
+          bin/solr start -c -z 99.48.58.77:2181
+cloud collection创建：solr.cmd create -c product -s 2 -rf 2 -d data_driven_schema_configs
+                   				  bin/solr create -c product -s 2 -rf 2
+cloud collections删除：solr.cmd delete -c product
+                      bin/solr delete -c product                     
+
+
+----------------------------------------------------------------------------------
+solrcloud更新conf文件
+----------------------------------------------------------------------------------
+使用zookeeper工具查看配置目录,进入zookeeper的bin目录，运行 zkCli.sh -server ip:port  ,运行 ls /configs 查看对应collections的配置目录是否存在
+
+ 
+./server/scripts/cloud-scripts/zkcli.sh -zkhost 99.48.58.77:2181 -cmd putfile /configs/product/managed-schema /Users/jinyuliang/Downloads/646069713/file/managed-schema 
+putfile 第一个路径是zookeeper配置文件路径，第二个是本地文件路径
+
+java -classpath D:\solr\solr-6.6.0\server\solr-webapp\webapp\WEB-INF\lib\* org.apache.solr.cloud.ZkCLI -cmd upconfig -zkhost 99.48.58.77:2181 -confdir D:\solr\solr-6.6.0\server\solr
+\configsets\data_driven_schema_configs -confname configs
+
+
+上传文件和更新文件后，需要reload	
+http://172.30.212.1:8983/solr/admin/collections?action=RELOAD&name=product
+
+
+----------------------------------------------------------------------------------
+中文分词：	
+solr集群：
+启动     bin/solr start -c -z zk1:port,zk2:port,zk2:port   
+        bin/solr create -c product -s 2 -rf 2      
+	
+        solr控制台cloud菜单可以看到solr节点。
+
+solrcloud 创建collections的时候通过-d参数制定配置文件，如果后面需要修改，需要通过命令或者solrj修改并重新reload
+
+-----------------------------------------
+中文分词：	
+1 引入依赖包：/Users/jinyuliang/dev/solr/solr-6.6.0/server/solr-webapp	/webapp/WEB-INF/lib  mmseg4节点三个包
+2 配置列:在configsets/data——driven_schema_configs中编辑
+    <field name="price"  type="int"    indexed="true"  stored="true"/>
+    <field name="inventory"  type="int"    indexed="true"  stored="true"/>
+    <field name="name"  type="text_mmseg4j_complex"    indexed="true"  stored="true"/>
+    <field name="decription"  type="text_mmseg4j_complex"    indexed="true"  stored="true"/>
+
+
+
+
+         <fieldType name="text_mmseg4j_complex" class="solr.TextField" positionIncrementGap="100" >  
+        <analyzer>  
+           <tokenizer class="com.chenlb.mmseg4j.solr.MMSegTokenizerFactory" mode="complex" dicPath="D:/solr/userinfodata" />  
+           <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" />  
+         </analyzer>  
+     </fieldType>  
+     
+
+     <fieldType name="text_mmseg4j_maxword" class="solr.TextField" positionIncrementGap="100" >  
+          <analyzer>  
+            <tokenizer class="com.chenlb.mmseg4j.solr.MMSegTokenizerFactory" mode="max-word" dicPath="D:/solr/userinfodata"/>  
+            <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" />  
+          </analyzer>  
+      </fieldType>  
+      <fieldType name="text_mmseg4j_simple" class="solr.TextField" positionIncrementGap="100" >  
+          <analyzer>  
+            <tokenizer class="com.chenlb.mmseg4j.solr.MMSegTokenizerFactory" mode="simple" dicPath="D:/solr/userinfodata"/>  
+            <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" />  
+          </analyzer>  
+      </fieldType>  
+
+
+
+         5.2 删除collection
+
+1 curl 'http://192.168.26.129:8983/solr/admin/collections?action=DELETE&name=test'
+    5.3 创建collection
+
+curl 'http://192.168.26.131:8983/solr/admin/collections?action=CREATE&name=postcollection&numShards=3&replicationFactor=3&maxShardsPerNode=3'
+   5.4 Relaod Collection
+
+1 curl 'http://127.0.0.1:8983/solr/admin/collections?action=RELOAD&name=postcollection'
+     
+
+
