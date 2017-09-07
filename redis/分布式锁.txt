@@ -1,0 +1,12 @@
+分布式锁常用实现：
+1 基于数据库版本号的乐观锁（悲观锁性能不好，不建议使用）
+   更新数据前先查询出版本号，更新数据时版本+1，不成功则重试
+
+   select id，data,version from table;  1,xxx,10
+   update table set data = asdf,version = version +1 where id = 1 and version = 10;
+   如果影响行数不为0则成功。
+
+   因为乐观锁执行更新之前，必须先查询，可以考虑使用存储过程把查询和更新放到存储过程一次执行。
+
+
+2 基于redis的分布式锁-参考RedisUtil.java
